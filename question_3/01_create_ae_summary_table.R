@@ -28,6 +28,8 @@ library(gtsummary)
 library(gt)
 library(dplyr)
 
+out_path <- "./output/"
+
 ## Load data
 adae <- pharmaverseadam::adae 
 adsl <- pharmaverseadam::adsl
@@ -52,4 +54,4 @@ teae_tbl <- teae |>
 ## Save table
 teae_tbl |> 
   as_gt() |> 
-  gtsave(filename = "question_3/output/ae_summary_table.html")
+  gtsave(filename = paste0(out_path, "/ae_summary_table.html"))

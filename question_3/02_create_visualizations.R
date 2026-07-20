@@ -24,7 +24,7 @@ library(ggplot2)
 library(binom)     # for Clopper-Pearson CIs
 library(scales)    
 
-fig_path <- "question_3/output/"
+fig_path <- "./output/"
 
 ## Load data
 adae <- pharmaverseadam::adae 
