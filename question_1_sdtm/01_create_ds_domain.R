@@ -24,8 +24,8 @@
 library(dplyr) 
 library(sdtm.oak)
 library(admiral)
-library(lubridate) # remove 
-library(tidyr) # remove?
+library(labelled)
+library(sdtmchecks)
 
 ################################# Load data ####################################
 # load DS raw data
@@ -33,7 +33,6 @@ ds_raw <- pharmaverseraw::ds_raw
 
 # load DM raw data (for RFICDTC var)
 dm_raw <- pharmaverseraw::dm_raw
-  # IC_DT maps to RFICDTC
 
 # read in control terminology
 ct.url <- "https://raw.githubusercontent.com/pharmaverse/examples/refs/heads/main/metadata/sdtm_ct.csv"
@@ -43,18 +42,27 @@ ct <- read.csv(ct.url, stringsAsFactors = F)
 # all blanks look to already be NA
 ds_raw <- convert_blanks_to_na(dat)
 
-# create oak id var
-ds_raw <- ds_raw |>
-  generate_oak_id_vars(pat_var = "PATNUM",
-                       raw_src = "ds_raw")
+############################## raw data checks #################################
+## confirm no missingnes where there shouldn'd be
+nonmissing_vars <- c("STUDY", "SITENM", "PATNUM", "INSTANCE", "IT.DSSTDAT", "DSDTCOL")
+chk_nonmissing <- sapply(nonmissing_vars, function(v) all(!is.na(ds_raw[[v]])))
 
-############################## data checks #####################################
+if (!any(chk_nonmissing)) "Missingness where non expected."
+
+## check that CRF is filled out as intended 
+# IT.DSDECOD and OTHERSP should never both be complete
+chk1 <- all(is.na(ds_raw$OTHERSP) + is.na(ds_raw$IT.DSDECOD))==1
+
+# IT.DSTERM and OTHERSP
+chk2 <- all(is.na(ds_raw$OTHERSP) + is.na(ds_raw$IT.DSTERM))==1
+
+
+
+## check that raw data can be mapped when expected
+# function to extract collected value and related terms and combine into vector
 get_terms <- function(code) {
   unique(unlist(ct[ct$codelist_code==code, c("collected_value", "term_preferred_term", "term_synonyms")]))
 }
-
-# IT.DSDECOD and OTHERSP should never both be complete
-table(is.na(ds_raw$OTHERSP), is.na(ds_raw$IT.DSDECOD))
 
 # IT.DSDECOD and OTHERSP use ct C66727
 dsdecod_terms <- get_terms("C66727")
@@ -62,6 +70,8 @@ setdiff(c(ds_raw$OTHERSP, ds_raw$IT.DSDECOD), dsdecod_terms)
 setdiff(dsdecod_terms, c(ds_raw$OTHERSP, ds_raw$IT.DSDECOD))
   # there are minor inconsistencies in many of the raw values that don't
   # properly map to CT
+
+# DSCAT uses CT C74558 but values are hard coded so nothing to check
 
 # CT for VISIT
 visit_terms <- get.terms("VISIT")
@@ -75,7 +85,6 @@ setdiff(visitnum_terms, ds_raw$INSTANCE)
 intersect(visitnum_terms, ds_raw$INSTANCE)
   # most VISIT/VISITNUM options map to CT, except for unscheduled visits. 
   # Only Unscheduled 3.1 maps, need to map other unscheduled visits
-
 
 # adding additional rows to CT to account for minor inconsistencies
 ct_updates <- tribble(
@@ -105,8 +114,21 @@ ct_updated$term_synonyms[ct_updated$collected_value=="Study Terminated By Sponso
 ct_updated$term_synonyms[ct_updated$collected_value=="Trial Screen Failure"] <- "Screen Failure"
 ct_updated$term_synonyms[ct_updated$collected_value=="Complete"] <- "Completed"
 
+## verify date variables
+# check that date variables don't contains any unknowns (no letters)
+date_vars <- c("IT.DSSTDAT", "DEATHDT", "DSDTCOL")
+date_checks <- sapply(date_vars, function(v) all(!grepl("[A-Za-z]", ds_raw[[v]]))==T)
 
-############################## generate ds domain ##############################
+if (!any(date_checks)) "Check date variables for unknowns or non-numeric dates"
+
+
+############################## generate DS domain ##############################
+# first add oak id var
+ds_raw <- ds_raw |>
+  generate_oak_id_vars(pat_var = "PATNUM",
+                       raw_src = "ds_raw")
+
+# ds domain
 ds <- 
   # create STUDYID, USUBJID, and DOMAIN
   assign_no_ct(
@@ -134,7 +156,6 @@ ds <-
     tgt_var = "DSTERM",
     id_vars = oak_id_vars()
   ) |>
-  # DSDECOD has controlled terminology
   # map OTHERSP to DSDECOD if OTHERSP is non-missing, otherwise map IT.DSDECOD to DSDECOD
   assign_ct(
     raw_dat = condition_add(ds_raw, !is.na(OTHERSP)),
@@ -227,13 +248,17 @@ ds <-
     DSDTC, 
     DSSTDTC
   )
+# there are still 3 terms that could not be mapped per CT
+#     - OTHERSP: Final Lab Visit, Final Retrieval Visit
+#     - IT.DSDECOD: Randomized
 
-## derive study day
-# modify DM domain raw data 
+## derive study day (DSSTDY)
+# first need to modify DM domain raw data to include RFSTDTC variable
 dm <- dm_raw |>
   mutate(RFSTDTC = create_iso8601(IC_DT, .format = "m/d/y"),
          USUBJID = PATNUM)
 
+# then can use sdtm.oak function to derive study day
 ds <- ds |>
   derive_study_day(
     dm_domain = dm, 
@@ -242,25 +267,34 @@ ds <- ds |>
     study_day_var = "DSSTDY"
 )
 
-# there are still 3 terms that could not be mapped per CT
-#     - OTHERSP: Final Lab Visit, Final Retrieval Visit
-#     - IT.DSDECOD: Randomized
+## Label variables
+var_label(ds) <- list(
+  STUDYID  = "Study Identifier",
+  DOMAIN   = "Domain Abbreviation",
+  USUBJID  = "Unique Subject Identifier",
+  DSSEQ    = "Sequence Number",
+  DSTERM   = "Reported Term for the Disposition Event",
+  DSDECOD  = "Standardized Disposition Term",
+  DSCAT    = "Category for Disposition Event",
+  VISITNUM = "Visit Number",
+  VISIT    = "Visit Name",
+  DSDTC    = "Date/Time of Collection",
+  DSSTDTC  = "Start Date/Time of Disposition Event"
+)
 
 
-### DPLYR version 
-# need to add mappings to controlled terminology
-ds_dplyr <- ds_raw |>
-  rename(STUDYID = STUDY,
-         USUBJID = PATNUM) |>
-  mutate(DOMAIN = "DS",
-         DSDECOD = if_else(is.na(OTHERSP), IT.DSDECOD, OTHERSP),
-         DSCAT = case_when(IT.DSDECOD == "Randomized" ~ "PROTOCOL MILESTONE",
-                           !is.na(IT.DSDECOD) ~ "DISPOSITION EVENT",
-                           !is.na(OTHERSP) ~ "OTHER EVENT"),
-         DSTERM = if_else(is.na(OTHERSP), IT.DSTERM, OTHERSP),
-         DSSTDTC = format_ISO8601(as.Date(ds.dplyr$IT.DSSTDAT, format = "%m-%d-%Y")))
-        # need to add another date variable
+############################## SDTM DS checks ##################################
 
+# can only do 3 checks bc DSSCAT was not derived and we don't have other domains
+chks <- c(
+  check_ds_dsterm_death_due_to(DS = ds),
+  check_ds_duplicate_randomization(DS = ds),
+  sdtmchecks::check_ds_multdeath_dsstdtc(DS = ds)
+)
+
+stopifnot(all(chks))
+
+################################ Save data #####################################
 
 
 
