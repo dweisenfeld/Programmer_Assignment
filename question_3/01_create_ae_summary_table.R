@@ -4,7 +4,7 @@
 # Auth: DLW
 # Date: 7/19/2026
 #
-# Input datasets
+# Input data
 #   - pharmaverseadam::adae 
 #.  - pharmaverseadam::adsl
 # 
@@ -58,4 +58,4 @@ teae_tbl |>
   as_gt() |> 
   gtsave(filename = paste0(out_path, "/ae_summary_table.html"))
 
-sink()
+sink(type = "message")

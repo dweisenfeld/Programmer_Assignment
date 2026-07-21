@@ -108,7 +108,6 @@ ct_updates <- tribble(
   
 # adding term synonyms to correct minor differences between actual collected value
 # and values listed in ct
-update
 ct_updated <- ct |> bind_rows(ct_updates)
 ct_updated$term_synonyms[ct_updated$collected_value=="Lost To Follow-Up"] <- "Lost to Follow-Up"
 ct_updated$term_synonyms[ct_updated$collected_value=="Study Terminated By Sponsor"] <- "Study Terminated by Sponsor"
@@ -300,6 +299,6 @@ stopifnot(all(chks))
 # could use xportr to write a CDISC-compliant .xpt file if metadata was available
 saveRDS(ds, file = "output/ds.rds")
 
-sink()
+sink(type = "message")
 
 

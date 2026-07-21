@@ -215,4 +215,4 @@ adsl |>
 # could use xportr to write a CDISC-compliant .xpt file if metadata was available
 saveRDS(adsl.final, file = paste0(out_path, "adsl.rds"))
 
-sink()
+sink(type = "message")

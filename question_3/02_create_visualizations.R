@@ -4,13 +4,13 @@
 # Auth: DLW
 # Date: 7/19/2026
 #
-# Input datasets
+# Input data
 #   - pharmaverseadam::adae 
 #   - pharmaverseadam::adsl 
 #
 # Outputs:
 # - Plot 1: AEs_by_Severity_Arm.png
-# - PLot 2: Top_AEs.png
+# - Plot 2: Top_AEs.png
 #
 # Notes:
 # - Plot 1: AE severity distribution by treatment (bar chart or heatmap). 
@@ -109,4 +109,4 @@ ggsave(filename = paste0(fig_path, "Top_AEs.png"), top_aes_plot,
 # in the binom.confint function n_subjects should be replaced with 
 # length(unique(adae$USUBJID))
 
-sink()
+sink(type = "message")
