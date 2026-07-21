@@ -21,6 +21,8 @@
 # - A text file/log file as evidence for code running error-free
 ##==============================================================================
 
+sink("output/question1_log.txt")
+
 library(dplyr) 
 library(sdtm.oak)
 library(admiral)
@@ -38,9 +40,8 @@ dm_raw <- pharmaverseraw::dm_raw
 ct.url <- "https://raw.githubusercontent.com/pharmaverse/examples/refs/heads/main/metadata/sdtm_ct.csv"
 ct <- read.csv(ct.url, stringsAsFactors = F)
 
-## 
-# all blanks look to already be NA
-ds_raw <- convert_blanks_to_na(dat)
+# make sure blanks are NA
+ds_raw <- convert_blanks_to_na(ds_raw)
 
 ############################## raw data checks #################################
 ## confirm no missingnes where there shouldn'd be
@@ -74,12 +75,12 @@ setdiff(dsdecod_terms, c(ds_raw$OTHERSP, ds_raw$IT.DSDECOD))
 # DSCAT uses CT C74558 but values are hard coded so nothing to check
 
 # CT for VISIT
-visit_terms <- get.terms("VISIT")
+visit_terms <- get_terms("VISIT")
 setdiff(ds_raw$INSTANCE, visit_terms)
 setdiff(visit_terms, ds_raw$INSTANCE)
 
 # CT for VISITNUM
-visitnum_terms <- get.terms("VISITNUM")
+visitnum_terms <- get_terms("VISITNUM")
 setdiff(ds_raw$INSTANCE, visitnum_terms)
 setdiff(visitnum_terms, ds_raw$INSTANCE)
 intersect(visitnum_terms, ds_raw$INSTANCE)
@@ -295,7 +296,10 @@ chks <- c(
 stopifnot(all(chks))
 
 ################################ Save data #####################################
+# Save the derived STDM DS domain as RDS
+# could use xportr to write a CDISC-compliant .xpt file if metadata was available
+saveRDS(ds, file = "output/ds.rds")
 
-
+sink()
 
 
