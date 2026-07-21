@@ -19,6 +19,8 @@
 #   AEs are captured inthe AETERM variable in the pharmaverseadam::adae dataset.
 ##==============================================================================
 
+sink("output/question3a_log.txt")
+
 library(dplyr)
 library(ggplot2)
 library(binom)     # for Clopper-Pearson CIs
@@ -28,6 +30,7 @@ fig_path <- "./output/"
 
 ## Load data
 adae <- pharmaverseadam::adae 
+adsl <- pharmaverseadam::adsl
 
 ##################### PLOT 1 - AE SEVERITY BY TREATMENT ########################
 
@@ -70,7 +73,7 @@ ae_counts <- adae |>
 # Calculate Clopper-Pearson 95% 
 ae_ci <- binom.confint(
   x = ae_counts$ae_count,
-  n = n_subjects,
+  n = n_subjects, # or length(unique(adae$USUBJID)) to make example?
   conf.level = 0.95,
   methods = "exact" 
 ) 
@@ -106,3 +109,4 @@ ggsave(filename = paste0(fig_path, "Top_AEs.png"), top_aes_plot,
 # in the binom.confint function n_subjects should be replaced with 
 # length(unique(adae$USUBJID))
 
+sink()

@@ -24,6 +24,8 @@
 # - Sort by descending frequency
 ##==============================================================================
 
+sink("output/question3.01_log.txt")
+
 library(gtsummary)
 library(gt)
 library(dplyr)
@@ -55,3 +57,5 @@ teae_tbl <- teae |>
 teae_tbl |> 
   as_gt() |> 
   gtsave(filename = paste0(out_path, "/ae_summary_table.html"))
+
+sink()
