@@ -1,5 +1,5 @@
 ##==============================================================================
-# Purpose: Create modk ADaM ADSL dataset for Genentech ADS Programmer assignment
+# Purpose: Create mock ADaM ADSL dataset for Genentech ADS Programmer assignment
 #
 # Auth: DLW
 # Date: 7/14/2026
@@ -12,7 +12,7 @@
 #   - pharmaversesdtm::ae
 #
 # Output:
-#   - 
+#   - ADSL dataset saved as RDS: "output/adsl.rds"
 #
 # Notes: 
 # - derive these variables
@@ -22,7 +22,7 @@
 #   - LSTAVLDT:         Last date known to be alive 
 ##==============================================================================
 
-sink("output/question2_log.txt")
+sink("logs/question2_log.txt")
 
 library(admiral)
 library(dplyr)

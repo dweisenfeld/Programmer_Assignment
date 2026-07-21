@@ -19,7 +19,7 @@
 #   AEs are captured inthe AETERM variable in the pharmaverseadam::adae dataset.
 ##==============================================================================
 
-sink("output/question3.02_log.txt")
+sink("logs/question3.02_log.txt")
 
 library(dplyr)
 library(ggplot2)

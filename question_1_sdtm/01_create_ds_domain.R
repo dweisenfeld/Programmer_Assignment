@@ -21,7 +21,7 @@
 # - A text file/log file as evidence for code running error-free
 ##==============================================================================
 
-sink("output/question1_log.txt")
+sink("logs/question1_log.txt")
 
 library(dplyr) 
 library(sdtm.oak)

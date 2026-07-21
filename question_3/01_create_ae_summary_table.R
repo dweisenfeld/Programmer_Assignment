@@ -24,7 +24,7 @@
 # - Sort by descending frequency
 ##==============================================================================
 
-sink("output/question3.01_log.txt")
+sink("logs/question3.01_log.txt")
 
 library(gtsummary)
 library(gt)

@@ -1,0 +1,10 @@
+[1] TRUE
+[1] TRUE
+         
+            2   3
+  >50       0 305
+  18 - 50   1   0
+# A tibble: 1 × 6
+  AGEGR9 AGEGR9N TRTSDTM TRTSTMF ITTFL LSTAVLDT
+   <int>   <int>   <int>   <int> <int>    <int>
+1      0       0      52      52     0        0
