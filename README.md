@@ -2,6 +2,21 @@
 
 ADS programmer assignment demonstrating data programming for clinical trials in R using the `sdtm.oak` and `admiral` packages. 
 
+## Structure
+
+```
+├── question_1_sdtm/
+│   └── 01_create_ds_domain.R        # Builds the SDTM DS domain
+├── question_2_adam/
+│   └── create_adsl.R                # Builds a mock ADaM ADSL dataset
+├── question_3/ 
+│   ├── 01_create_ae_summary_table.R # Summary table of treatment-emergent AEs
+│   └── 02_create_visualizations.R   # AE severity and top-AE incidence plots
+├── logs/                            # Logs from each script 
+├── output/                          # Generated data, tables, and plots
+└── project.Rproj                    # RStudio project file
+```
+
 ## Overview of each script
 
 ### Question 1 — SDTM DS Domain (`question_1_sdtm/`)
@@ -37,8 +52,8 @@ Each script writes a console log to `logs/` and saves its resulting dataset, tab
 
 Script | File | Description |
 |---|---|---|
-`question_1_sdtm/X` | `output/ds.rds` | SDTM DS domain |
-`question_2_adam/X` | `output/adsl.rds` | ADaM ADSL dataset |
+`question_1_sdtm/01_create_ds_domain.R` | `output/ds.rds` | SDTM DS domain |
+`question_2_adam/create_adsl.R` | `output/adsl.rds` | ADaM ADSL dataset |
 `question_3/01_create_ae_summary_table.R` | `output/ae_summary_table.html` | TEAE summary table |
 `question_3/02_create_visualizations.R` | `output/AEs_by_Severity_Arm.png` | AE severity by treatment arm |
 `question_3/02_create_visualizations.R` | `output/Top_AEs.png` | Top 10 AEs with 95% CIs |
